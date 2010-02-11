@@ -1,0 +1,13 @@
+h1. EvernoteFuse
+
+EvernoteFuse will mount Evernote resources to a OS file-system by Fuse.
+
+h2. Dependencies
+
+* Fuse (or some clones of Fuse)
+* Thrift
+* Evernote-API tool
+* Ruby
+** libfusefs-ruby
+** thrift.rb
+** evernote.rb
