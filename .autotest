@@ -1,0 +1,53 @@
+# -*- coding: undecided -*-
+# -*- ruby -*-
+
+# require 'autotest/autoupdate'
+# require 'autotest/once'
+# require 'autotest/rcov'
+# require 'autotest/restart'
+# require 'autotest/timestamp'
+
+# Autotest::AutoUpdate.sleep_time = o
+# Autotest::AutoUpdate.update_cmd = o
+# Autotest::RCov.command = o
+# Autotest::RCov.pattern = o
+
+require 'autotest/screen'   # コメントアウトを外す
+
+Autotest.add_hook :initialize do |at|
+  %w{.svn .hg .git}.each {|exception| at.add_exception(exception)}
+  at.add_exception('spec/evernote_spec.rb')
+end
+
+Autotest::HOOKS.delete(:interrupt)
+Autotest::Screen.statusline = %q[|%c %m/%d|%w %=]
+
+class Autotest::Screen
+  SCREEN_COLOR[:green] = 'gw'
+  SCREEN_COLOR[:yellow] = 'yk'
+
+  Autotest.add_hook :run_command do |at|
+    message 'Running' if execute?
+  end
+
+  Autotest.add_hook :quit do |at|
+    clear if execute?
+  end
+
+  Autotest.add_hook :ran_command do |at|
+    return unless execute?
+    results = [at.results].flatten.join("¥n")
+    output = results.slice(/(¥d+)¥sexamples?,¥s*(¥d+)¥s.*failures?(?:,¥s*(¥d+)¥s.*pendings?)?/)
+    if output
+      ex,fail,pend = $~.captures.map {|e| e.to_i}
+      if 0 < fail
+        message "FAIL #{ex}ex, F:#{fail} ", :red
+      elsif 0 < pend
+        message "Pend #{ex}ex, F:#{fail} P:#{pend}", :yellow
+      else
+        message "All Green #{ex}ex", :green
+      end
+    end
+  end
+end
+

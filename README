@@ -1,0 +1,5 @@
+--evernote-fs--
+* Mount Evernote resources to a OS file-system.
+* Required:
+  - Fuse
+  - libfuse-ruby

@@ -1,0 +1,9 @@
+function
+- titleが重なっているNoteの回避
+- Noteの構造変更
+- キャッシュ仕組み (createdで比較する)
+-
+
+spec
+- キャッシュ関連のspec
+-
