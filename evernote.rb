@@ -2,6 +2,7 @@ require "rubygems"
 require "delegate"
 require "digest/md5"
 require 'evernote_libs.rb'
+require 'evernote_enml.rb'
 
 module REvernote
   def self.init(conf)
@@ -23,6 +24,9 @@ module REvernote
   # title
   # content
   class Note < DelegateClass(Evernote::EDAM::Type::Note)
+    FIELDS = Evernote::EDAM::Type::Note::FIELDS
+    attr_accessor :note
+
     def initialize(note, core)
       @note = note
       @core = core
@@ -32,14 +36,50 @@ module REvernote
     def load_content
       self.content = @core.note_store.getNoteContent(@core.auth_token, self.guid)
     end
+
+    def to_uniq_key(name)
+      "evernote::#{self.guid}::#{name}"
+    end
+
+    alias_method :old_content_setter, :content=
+    def content=(value)
+      unless REvernote::ENML.is_enml?(value)
+        value = REvernote::ENML.new(value).to_s
+      end
+      self.old_content_setter value
+    end
+
+    def save
+      @core.note_store.updateNote(@core.auth_token, @note)
+    end
+
+    def updated_at
+      Time.at(updated / 1000)
+    end
+
+    class << self
+      def build(core, options)
+        if options[:content].class == REvernote::ENML
+          options[:content] = options[:content].to_s
+        else
+          options[:content] = REvernote::ENML.new(options[:content]).to_s
+        end
+        raw_note = Evernote::EDAM::Type::Note.new(options)
+        self.new(raw_note, core)
+      end
+    end
   end
 
   # guid
   # name
   class Notebook < DelegateClass(Evernote::EDAM::Type::Notebook)
+    FIELDS = Evernote::EDAM::Type::Notebook::FIELDS
+    attr_accessor :notes
+
     def initialize(notebook, core)
       @notebook = notebook
       @core = core
+      @notes = {}
       super(@notebook)
     end
 
@@ -48,9 +88,30 @@ module REvernote
       filter.notebookGuid = self.guid
       filter.ascending = false
       list = @core.note_store.findNotes(@core.auth_token, filter, offset, max)
-      list.notes.map do |note|
-        Note.new(note, @core)
+      list.notes.map do |raw_note|
+        note =  Note.new(raw_note, @core)
+        push_note note
+        note
       end
+    end
+
+    def get_note(guid)
+      raw_note = @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
+      note = Note.new(raw_note, @core)
+      push_note note
+    end
+
+    def create_note(note_base)
+      note_base = Note.build(@core, note_base) if note_base.is_a?(Hash)
+      raw_note = note_base.instance_of?(REvernote::Note) ? note_base.note : note_base
+      new_note = @core.note_store.createNote(@core.auth_token, raw_note)
+      note = Note.new(new_note, @core)
+      push_note note
+    end
+
+    private
+    def push_note(note)
+      @notes[note.guid] = note
     end
   end
 
