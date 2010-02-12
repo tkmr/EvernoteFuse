@@ -31,7 +31,7 @@ module EvernoteFS
 
     def new_file(name, content = nil)
       content ||= ""
-      @book.create_note(:title => name, :content => content)
+      Note.new(@book.create_note(:title => name, :content => content))
     end
   end
 
@@ -46,6 +46,12 @@ module EvernoteFS
 
     def read
       @note.load_content
+    end
+
+    def write(body)
+      @note.content = body
+      @note.save
+      @note.content
     end
 
     def updated_at

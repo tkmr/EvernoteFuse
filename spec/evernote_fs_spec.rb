@@ -27,8 +27,16 @@ describe EvernoteFS do
 
     @default_notebook = {
       :name => 'evernote-notebook-stub',
-      :find_notes => [@default_note]
+      :find_notes => [@default_note],
     }.stubnize!
+
+    @default_notebook.stub!(:create_note).and_return do |h|
+      hash = @default_note.clone.stubnize!
+      hash.stub!(:content).and_return(h[:content])
+      hash.stub!(:load_content).and_return(h[:content])
+      hash.stub!(:title).and_return(h[:title])
+      hash
+    end
 
     @core = {
       :notebooks => [@default_notebook],
@@ -78,7 +86,13 @@ describe EvernoteFS do
 
       describe :new_file do
         it 'should return a Note' do
-          pending
+          t = 'new title'
+          b = 'new body'
+          @notebook.write_to(t, b)
+
+          file = @notebook.files[t]
+          file.class.should == EvernoteFS::Note
+          file.to_s.should == b
         end
       end
 
@@ -96,7 +110,12 @@ describe EvernoteFS do
 
         describe :write  do
           it 'should update a Note\'s content' do
-            pending
+            new_content = 'this is new content'
+            @default_note.should_receive(:save)
+            @default_note.stub!(:content=)
+            @default_note.stub!(:content).and_return(REvernote::ENML.new(new_content).to_s)
+
+            @notebook.write_to(@default_note[:title], new_content)
           end
         end
 
