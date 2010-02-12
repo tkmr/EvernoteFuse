@@ -1,12 +1,14 @@
 function
 - titleが重なっているNoteの回避
-- Noteの構造変更
+- TimeZone 対応
+
 - meta_data
-  - permission
   - can_mkdir?
   - updated_at とか
 
+- CachedDir も contents はキャッシュするべき
+  (marshal する？)
+
 spec
-- mkdir や write_to でfile / dirが入ってくのか？
 - drag & drop はどんな動きなのか？
 

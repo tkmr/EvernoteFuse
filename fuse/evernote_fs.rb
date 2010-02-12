@@ -5,10 +5,11 @@ require File.join(File.dirname(__FILE__), '..', 'evernote.rb')
 
 module EvernoteFS
   class Root < CachedDir
+    include CachedDir::CallbackBase
     attr_accessor :core
 
     def initialize(conf)
-      super()
+      super(self)
       @core = REvernote::init conf
       @core.notebooks.each do |nb|
         self.mkdir(nb.name, Notebook.new(nb))
@@ -17,46 +18,38 @@ module EvernoteFS
   end
 
   class Notebook < CachedDir
+    include CachedDir::CallbackBase
     attr_accessor :book
 
     def initialize(notebook)
-      super()
+      super(self)
       @book = notebook
       @book.find_notes.each do |note|
-        self.mkdir(note.title, Note.new(note))
+        self.write_to(note.title, Note.new(note))
       end
     end
-  end
 
-  class Note < CachedDir
-    attr_accessor :note
-    def initialize(my_note)
-      super()
-      @note = my_note
-      @content = NoteContent.new(to_uniq('content'), @note)
-      self.write_to('title', @note.title)
-      self.write_to('content', @content)
-      self.write_to('guid', @note.guid)
-    end
-
-    def to_uniq(name)
-      "evernote::#{uniqid}::#{name}"
-    end
-
-    def uniqid
-      @note.guid
+    def new_file(name, content = nil)
+      content ||= ""
+      @book.create_note(:title => name, :content => content)
     end
   end
 
-  class NoteContent < CachedFile
+  class Note < CachedFile
     include CachedFile::CallbackBase
-    def initialize(id, note)
-      @note = note
-      super(id, self)
+    attr_accessor :note
+
+    def initialize(my_note)
+      @note = my_note
+      super(@note.to_uniq_key('note_content'), self)
     end
 
     def read
       @note.load_content
+    end
+
+    def updated_at
+      @note.updated_at
     end
   end
 end
