@@ -1,5 +1,18 @@
-function
+<< spec >>
+- Stub! のやり方が、ちょっと強引。もう少し低水準でStubする
+- ENMLが二重にエンコードされてる
+- 毎回APIをロードしている気がする (CachedFile)
+- drag & drop はどんな動きなのか
+
+
+<< function >>
+- debug mode
+  - いつAPIを実行してるか、確認のため
+
 - titleが重なっているNoteの回避
+  - titleへidを付けたらどうだろ、sortもできる
+
+- filter的な物はどうか？ (ENMLtoHTML filter とか)
 
 - TimeZone 対応
 
@@ -7,14 +20,7 @@ function
   - Async API (Event machine?)
   - 過剰なUpdateがEvernoteへいかないように
 
-- meta_data
-  - can_mkdir?
-  - updated_at とか
-
 - CachedDir も contents はキャッシュするべき
   (marshal する？)
 
-
-spec
-- drag & drop はどんな動きなのか？
-
+- umount 対策 SIGHUP
