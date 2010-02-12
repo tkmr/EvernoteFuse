@@ -1,9 +1,12 @@
 function
 - titleが重なっているNoteの回避
 - Noteの構造変更
-- キャッシュ仕組み (createdで比較する)
--
+- meta_data
+  - permission
+  - can_mkdir?
+  - updated_at とか
 
 spec
-- キャッシュ関連のspec
--
+- mkdir や write_to でfile / dirが入ってくのか？
+- drag & drop はどんな動きなのか？
+

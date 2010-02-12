@@ -30,8 +30,7 @@ module REvernote
     end
 
     def load_content
-      note = @core.note_store.getNote(@core.auth_token, self.guid, true, false, false, false)
-      self.content = note.content
+      self.content = @core.note_store.getNoteContent(@core.auth_token, self.guid)
     end
   end
 
@@ -47,6 +46,7 @@ module REvernote
     def find_notes(offset = 0, max = 100)
       filter = Evernote::EDAM::NoteStore::NoteFilter.new
       filter.notebookGuid = self.guid
+      filter.ascending = false
       list = @core.note_store.findNotes(@core.auth_token, filter, offset, max)
       list.notes.map do |note|
         Note.new(note, @core)
