@@ -5,6 +5,8 @@ require 'evernote_libs.rb'
 require 'evernote_enml.rb'
 
 module REvernote
+  class ArgumentInvalidException < Exception; end
+
   def self.init(conf)
     Core.new(conf)
   end
@@ -84,46 +86,50 @@ module REvernote
     end
 
     def find_notes(offset = 0, max = 100)
-      filter = Evernote::EDAM::NoteStore::NoteFilter.new
-      filter.notebookGuid = self.guid
-      filter.ascending = false
-      list = @core.note_store.findNotes(@core.auth_token, filter, offset, max)
-      list.notes.map do |raw_note|
-        note =  Note.new(raw_note, @core)
-        push_note note
-        note
+      filter = new_filter(:guid => self.guid, :asc => false)
+      @core.note_store.findNotes(@core.auth_token, filter, offset, max).notes.map do |raw_note|
+        convert_to_note raw_note
       end
     end
 
     def get_note(guid)
-      raw_note = @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
-      note = Note.new(raw_note, @core)
-      push_note note
+      convert_to_note @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
     end
 
     def create_note(note_base)
-      note_base = Note.build(@core, note_base) if note_base.is_a?(Hash)
-      raw_note = note_base.instance_of?(REvernote::Note) ? note_base.note : note_base
-      new_note = @core.note_store.createNote(@core.auth_token, raw_note)
-      note = Note.new(new_note, @core)
-      push_note note
+      case note_base.class.name
+      when "Hash"
+        raw_note = Note.build(@core, note_base).note
+      when "REvernote::Note"
+        raw_note = note_base.note
+      when "Evernote::EDAM::Type::Note"
+        raw_note = note_base
+      else
+        raise ArgumentInvalidException.new
+      end
+      convert_to_note @core.note_store.createNote(@core.auth_token, raw_note)
     end
 
     private
-    def push_note(note)
+    def new_filter(options = {})
+      filter = Evernote::EDAM::NoteStore::NoteFilter.new
+      filter.notebookGuid = options[:guid] if options.has_key?(:guid)
+      filter.ascending    = options[:asc]  if options.has_key?(:asc)
+      filter
+    end
+
+    def convert_to_note(raw_note)
+      note = Note.new(raw_note, @core)
       @notes[note.guid] = note
+      note
     end
   end
 
   class Core
-    attr_accessor :note_store
-    attr_accessor :notebooks
-    attr_accessor :auth_token
+    attr_accessor :note_store, :notebooks, :auth_token
 
     def initialize(conf)
       self.login(conf)
-
-      #setup notestore
       @note_store = Evernote::EDAM::NoteStore::NoteStore::Client.new(self.getProtocol(conf.noteStoreUrlBase + @user.shardId))
       @notebooks = @note_store.listNotebooks(@auth_token).map do |l|
         book = Notebook.new(l, self)

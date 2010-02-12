@@ -1,6 +1,11 @@
 function
 - titleが重なっているNoteの回避
+
 - TimeZone 対応
+
+- Bulk update or API queue
+  - Async API (Event machine?)
+  - 過剰なUpdateがEvernoteへいかないように
 
 - meta_data
   - can_mkdir?
@@ -8,6 +13,7 @@ function
 
 - CachedDir も contents はキャッシュするべき
   (marshal する？)
+
 
 spec
 - drag & drop はどんな動きなのか？
