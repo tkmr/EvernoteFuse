@@ -9,40 +9,65 @@ class Hash
   end
 end
 
+class EverMock
+  class NoteStore
+    attr_accessor :notes
+
+    def initialize
+      note = gen_note('default-note-title', 'default-note-body')
+      @notes = {}
+      @notes[note.guid] = note
+    end
+
+    def findNotes(t, f, o, m)
+      {:notes => @notes.values}.stubnize!
+    end
+
+    def getNoteContent(t, guid)
+      @notes[guid].content
+    end
+
+    def getNote(t, g, *arg)
+      @notes[g]
+    end
+
+    def createNote(t, base)
+      note = gen_note(base.title, base.content)
+      @notes[note.guid] = note
+      note
+    end
+
+    def updateNote(t, note)
+      @notes[note.guid] = note
+    end
+
+    def gen_note(title, body)
+      Evernote::EDAM::Type::Note.new(:title => title,
+                                     :content => body,
+                                     :guid => (rand*10000000).to_i,
+                                     :updated => Time.now.to_i)
+    end
+  end
+
+  class Core
+    attr_accessor :note_store, :default_notebook, :notebooks, :auth_token
+    def initialize
+      @note_store       = NoteStore.new
+      @notebooks        = [gen_notebook('default-notebook')]
+      @default_notebook = @notebooks.first
+      @auth_token       = 'dkdkdkdkdkdkdkdkdkd'
+    end
+    def gen_notebook(name)
+      REvernote::Notebook.new(Evernote::EDAM::Type::Notebook.new(:name => name), self)
+    end
+  end
+end
+
 E = EvernoteFS
 describe EvernoteFS do
   before :all do
-    #setup evernote stub
-    @test_note_body = 'this is the test note body'
-    @test_guid = '112233445566778899'
-
-    @default_note = {
-      :title => 'evernote-note-stub-title',
-      :content => @test_note_body,
-      :guid => @test_guid,
-      :load_content => @test_note_body,
-      :to_uniq_key => "#{@test_guid}-key",
-      :updated_at => Time.now
-    }.stubnize!
-
-    @default_notebook = {
-      :name => 'evernote-notebook-stub',
-      :find_notes => [@default_note],
-    }.stubnize!
-
-    @default_notebook.stub!(:create_note).and_return do |h|
-      hash = @default_note.clone.stubnize!
-      hash.stub!(:content).and_return(h[:content])
-      hash.stub!(:load_content).and_return(h[:content])
-      hash.stub!(:title).and_return(h[:title])
-      hash
-    end
-
-    @core = {
-      :notebooks => [@default_notebook],
-      :default_notebook => @default_notebook
-    }.stubnize!
-
+    #mock
+    @core = EverMock::Core.new
     REvernote.stub!(:init).and_return(@core)
   end
 
@@ -77,10 +102,9 @@ describe EvernoteFS do
 
       describe :write_to do
         it 'should create a new Note and push it to Evernote' do
-          note = nil
-          @evernote.default_notebook.should_receive(:create_note)
-          @notebook.write_to(@new_note_title, @new_note_body)
-          @notebook.read_file(@new_note_title).should == @new_note_body
+          title = 'hu hu hu hu'
+          @notebook.write_to(title, @new_note_body)
+          @notebook.read_file(title).should == REvernote::ENML.new(@new_note_body).to_s
         end
       end
 
@@ -92,7 +116,7 @@ describe EvernoteFS do
 
           file = @notebook.files[t]
           file.class.should == EvernoteFS::Note
-          file.to_s.should == b
+          file.to_s.should == REvernote::ENML.new(b).to_s
         end
       end
 
@@ -100,22 +124,21 @@ describe EvernoteFS do
       describe E::Note do
         before :all do
           @note = @notebook.files[@notebook.files.keys.last]
+          @note.read
         end
 
         describe :to_s do
           it 'should return Note.content' do
-            @note.to_s.should == @test_note_body
+            @note.to_s.should == @note.note.content
           end
         end
 
         describe :write  do
           it 'should update a Note\'s content' do
-            new_content = 'this is new content'
-            @default_note.should_receive(:save)
-            @default_note.stub!(:content=)
-            @default_note.stub!(:content).and_return(REvernote::ENML.new(new_content).to_s)
-
-            @notebook.write_to(@default_note[:title], new_content)
+            @notebook.read_file(@note.note.title).should == @note.to_s
+            new_content = REvernote::ENML.new('this is new content').to_s
+            @notebook.write_to(@note.note.title, new_content)
+            @notebook.read_file(@note.note.title).should == new_content
           end
         end
 
