@@ -1,11 +1,7 @@
-<< spec >>
-- Stub! のやり方が、ちょっと強引。もう少し低水準でStubする
 - ENMLが二重にエンコードされてる
+
 - 毎回APIをロードしている気がする (CachedFile)
-- drag & drop はどんな動きなのか
 
-
-<< function >>
 - debug mode
   - いつAPIを実行してるか、確認のため
 
@@ -24,3 +20,7 @@
   (marshal する？)
 
 - umount 対策 SIGHUP
+
+- drag & drop はどんな動きなのか
+
+- DTD check

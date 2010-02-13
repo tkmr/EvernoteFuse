@@ -45,10 +45,7 @@ module REvernote
 
     alias_method :old_content_setter, :content=
     def content=(value)
-      unless REvernote::ENML.is_enml?(value)
-        value = REvernote::ENML.new(value).to_s
-      end
-      self.old_content_setter value
+      self.old_content_setter(REvernote::ENML.new(value).to_s)
     end
 
     def save
@@ -61,11 +58,7 @@ module REvernote
 
     class << self
       def build(core, options)
-        if options[:content].class == REvernote::ENML
-          options[:content] = options[:content].to_s
-        else
-          options[:content] = REvernote::ENML.new(options[:content]).to_s
-        end
+        options[:content] = REvernote::ENML.new(options[:content]).to_s
         raw_note = Evernote::EDAM::Type::Note.new(options)
         self.new(raw_note, core)
       end
