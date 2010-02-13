@@ -33,6 +33,7 @@ module REvernote
         end
 
       else
+        REvernote::Logger.info ['Evernote::ENML#initialize was called', body]
         raise ENMLConvertError.new
       end
     end

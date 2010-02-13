@@ -18,10 +18,10 @@ describe EvernoteFS do
         content = 'hello'
         @callback.stub!(:updated_at).and_return(Time.now - 1000)
         # push to cache
-        @callback.should_receive(:read).and_return(content)
+        @callback.should_receive(:act_read).and_return(content)
         file.read.should == content
         # use cache
-        @callback.should_not_receive(:read)
+        @callback.should_not_receive(:act_read)
         file.read.should == content
       end
     end
@@ -30,7 +30,7 @@ describe EvernoteFS do
     describe 'write method' do
       it 'should send :write to the callback obj' do
         content = 'hello world'
-        @callback.should_receive(:write).with(content).and_return(content.upcase)
+        @callback.should_receive(:act_write).with(content).and_return(content.upcase)
         @file.write content
         @file.to_s.should == content.upcase
       end
@@ -40,7 +40,7 @@ describe EvernoteFS do
         @file.write content
         # use cache
         @callback.stub!(:updated_at).and_return(Time.now - 3600)
-        @callback.should_not_receive(:read)
+        @callback.should_not_receive(:act_read)
         @file.to_s.should == content
       end
     end
@@ -50,7 +50,7 @@ describe EvernoteFS do
       it 'should send :delete to the callback obj' do
         file = E::CachedFile.new('/mnt/test/vi/test3.txt', @callback)
         file.write 'test'
-        @callback.should_receive(:delete)
+        @callback.should_receive(:act_delete)
         file.delete
       end
 
@@ -119,7 +119,7 @@ describe EvernoteFS do
         @dir.write_to(file_name, @content)
 
         file_callback.stub!(:updated_at).and_return(Time.now + 3600)
-        file_callback.should_receive(:read)
+        file_callback.should_receive(:act_read)
         @dir.read_file(file_name).should == @content.upcase
       end
 

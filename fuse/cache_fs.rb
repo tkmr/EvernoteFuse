@@ -5,9 +5,9 @@ require 'sha1'
 require 'uuidtools'
 
 #    module CallbackBase
-#      def write(body); nil; end
-#      def read; nil; end
-#      def delete; nil; end
+#      def act_write(body); nil; end
+#      def act_read; nil; end
+#      def act_delete; nil; end
 #      def updated_at; nil; end
 #    end
 #    module CallbackBase
@@ -19,9 +19,9 @@ require 'uuidtools'
 module EvernoteFS
   class CachedFile
     module CallbackBase
-      def write(body); nil; end
-      def read; nil; end
-      def delete; nil; end
+      def act_write(body); nil; end
+      def act_read; nil; end
+      def act_delete; nil; end
       def updated_at; nil; end
     end
 
@@ -47,24 +47,22 @@ module EvernoteFS
       cache_exist && (modified.nil? || modified < @cache_file.mtime)
     end
 
-    def to_s
-      self.read
-    end
-
     def size
       @cache_file.size
     end
 
+    def to_s; read; end
+
     def read
       unless cached?
-        content = callback.read
+        content = callback.act_read
         write_to_file(content) if content && content.length > 0
       end
       @cache_file.exist? ? @cache_file.read : nil
     end
 
     def write(body)
-      body = callback.write(body) || body
+      body = callback.act_write(body) || body
       write_to_file(body)
     end
 
@@ -75,7 +73,7 @@ module EvernoteFS
     end
 
     def delete
-      callback.delete
+      callback.act_delete
       @cache_file.delete if @cache_file.exist?
     end
   end
@@ -115,10 +113,10 @@ module EvernoteFS
         false
       elsif !rest.nil?
         super
-      elsif @files.has_key?(base)
-        @files[base].write(file)
       elsif file.is_a?(CachedFile)
         @files[base] = file
+      elsif @files.has_key?(base)
+        @files[base].write(file)
       else
         @files[base] = @callback.new_file(base, file) || CachedFile.new(new_uuid, nil, file)
       end

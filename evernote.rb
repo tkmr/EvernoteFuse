@@ -36,6 +36,7 @@ module REvernote
     end
 
     def load_content
+      REvernote::Logger.info ['Note#load_content was called', self]
       self.content = @core.note_store.getNoteContent(@core.auth_token, self.guid)
     end
 
@@ -49,6 +50,7 @@ module REvernote
     end
 
     def save
+      REvernote::Logger.info ['Note#save was called', self]
       @core.note_store.updateNote(@core.auth_token, @note)
     end
 
@@ -79,17 +81,22 @@ module REvernote
     end
 
     def find_notes(offset = 0, max = 100)
+      REvernote::Logger.info ['Notebook#find_notes was called', self]
+
       filter = new_filter(:guid => self.guid, :asc => false)
       @core.note_store.findNotes(@core.auth_token, filter, offset, max).notes.map do |raw_note|
-        convert_to_note raw_note
+        convert_and_push_note raw_note
       end
     end
 
     def get_note(guid)
-      convert_to_note @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
+      REvernote::Logger.info ['Notebook#get_note was called', self]
+      convert_and_push_note @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
     end
 
     def create_note(note_base)
+      REvernote::Logger.info ['Notebook#create_note was called', self]
+
       case note_base.class.name
       when "Hash"
         raw_note = Note.build(@core, note_base).note
@@ -100,10 +107,9 @@ module REvernote
       else
         raise ArgumentInvalidException.new
       end
-      convert_to_note @core.note_store.createNote(@core.auth_token, raw_note)
+      convert_and_push_note @core.note_store.createNote(@core.auth_token, raw_note)
     end
 
-    private
     def new_filter(options = {})
       filter = Evernote::EDAM::NoteStore::NoteFilter.new
       filter.notebookGuid = options[:guid] if options.has_key?(:guid)
@@ -111,7 +117,7 @@ module REvernote
       filter
     end
 
-    def convert_to_note(raw_note)
+    def convert_and_push_note(raw_note)
       note = Note.new(raw_note, @core)
       @notes[note.guid] = note
       note
@@ -136,6 +142,8 @@ module REvernote
     end
 
     def login(conf)
+      REvernote::Logger.info ['Core#login was called', self]
+
       userStore = Evernote::EDAM::UserStore::UserStore::Client.new(self.getProtocol(conf.userStoreUrl))
       unless userStore.checkVersion("Ruby EDAMTest", Evernote::EDAM::UserStore::EDAM_VERSION_MAJOR, Evernote::EDAM::UserStore::EDAM_VERSION_MINOR)
         raise "Evernote client version is invalid"
@@ -150,6 +158,29 @@ module REvernote
       return Thrift::BinaryProtocol.new(transport)
     end
   end
+
+
+  class Logger
+    class << self
+      def init(conf)
+        @logger = ::Logger.new(conf[:path])
+        @logger.level = conf[:level] || ::Logger::WARN
+      end
+
+      def method_missing(name, *args)
+        msg = args.first
+        if @logger
+          if msg.class == Array
+            msg.each{|m|  @logger.send(name, m.inspect)  }
+          else
+            @logger.send(name, msg.inspect)
+          end
+          @logger.send(name, caller.inspect)
+        end
+      end
+    end
+  end
+
 end
 
 # fr test

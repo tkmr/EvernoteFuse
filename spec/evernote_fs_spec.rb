@@ -9,6 +9,7 @@ class Hash
   end
 end
 
+# for test..
 class EverMock
   class NoteStore
     attr_accessor :notes
@@ -45,7 +46,7 @@ class EverMock
       Evernote::EDAM::Type::Note.new(:title => title,
                                      :content => body,
                                      :guid => (rand*10000000).to_i,
-                                     :updated => Time.now.to_i)
+                                     :updated => Time.now.to_i + 3000)
     end
   end
 
@@ -58,7 +59,16 @@ class EverMock
       @auth_token       = 'dkdkdkdkdkdkdkdkdkd'
     end
     def gen_notebook(name)
-      REvernote::Notebook.new(Evernote::EDAM::Type::Notebook.new(:name => name), self)
+      nb = REvernote::Notebook.new(Evernote::EDAM::Type::Notebook.new(:name => name), self)
+      nb.convert_and_push_note gen_note("title #{(rand*10000).to_i}", "content #{(rand*10000).to_i}")
+      nb.convert_and_push_note gen_note("title #{(rand*10000).to_i}", "content #{(rand*10000).to_i}")
+      nb
+    end
+    def gen_note(title, body)
+      Evernote::EDAM::Type::Note.new(:title => title,
+                                     :content => body,
+                                     :guid => (rand*10000000).to_i,
+                                     :updated => Time.now.to_i)
     end
   end
 end
@@ -88,9 +98,9 @@ describe EvernoteFS do
       @root.contents("").sort.should == @evernote.notebooks.map{|n| n.name }.sort
     end
 
-    # Notebook --------------------------
+    # Notebook -----------------------
     describe E::Notebook do
-      before :all do
+      before :each do
         @notebook = @root.subdirs[@evernote.default_notebook.name]
       end
 
@@ -105,6 +115,16 @@ describe EvernoteFS do
           title = 'hu hu hu hu'
           @notebook.write_to(title, @new_note_body)
           @notebook.read_file(title).should == REvernote::ENML.new(@new_note_body).to_s
+        end
+
+        it 'should accept a EvernoteFS::Note' do
+          note = @notebook.files.values.first
+          note.to_s
+          note.class.should == EvernoteFS::Note
+
+          title = 'test EvernoteFS::Note'
+          @notebook.write_to(title, note)
+          @notebook.read_file(title).should == note.to_s
         end
       end
 
@@ -122,13 +142,14 @@ describe EvernoteFS do
 
       # Note --------------------------
       describe E::Note do
-        before :all do
+        before :each do
           @note = @notebook.files[@notebook.files.keys.last]
           @note.read
         end
 
         describe :to_s do
           it 'should return Note.content' do
+            @note.write('hello this is test content')
             @note.to_s.should == @note.note.content
           end
         end

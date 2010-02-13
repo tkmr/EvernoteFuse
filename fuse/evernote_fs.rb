@@ -44,17 +44,20 @@ module EvernoteFS
       super(@note.to_uniq_key('note_content'), self)
     end
 
-    def read
+    def act_read
+      REvernote::Logger.info ['EvernoteFS::Note#read was called', self]
       @note.load_content
     end
 
-    def write(body)
+    def act_write(body)
+      REvernote::Logger.info ['EvernoteFS::Note#write was called', self, body]
       @note.content = body
       @note.save
       @note.content
     end
 
     def updated_at
+      REvernote::Logger.info ['EvernoteFS::Note#updated_at', @note.updated_at]
       @note.updated_at
     end
   end
@@ -63,6 +66,7 @@ end
 if __FILE__ == $0
   target_path = ARGV.shift
   raise 'Argument error! set a mount point' unless target_path
+  REvernote::Logger.init(REvernote::DEV_CONF.logger)
   root = EvernoteFS::Root.new(REvernote::DEV_CONF)
   FuseFS.set_root(root)
   FuseFS.mount_under(target_path)

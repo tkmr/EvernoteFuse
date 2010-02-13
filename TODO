@@ -1,7 +1,3 @@
-- ENMLが二重にエンコードされてる
-
-- 毎回APIをロードしている気がする (CachedFile)
-
 - debug mode
   - いつAPIを実行してるか、確認のため
 
