@@ -1,12 +1,18 @@
-- debug mode
-  - いつAPIを実行してるか、確認のため
+- Emacsで書き込むと二枚、三枚かきこまれる
+  - Updateの判断が上手くいってない
+
+- Cacheのexpire time を考える
+  - 若しくはupdated_atの洗い替え
 
 - titleが重なっているNoteの回避
   - titleへidを付けたらどうだろ、sortもできる
 
-- filter的な物はどうか？ (ENMLtoHTML filter とか)
+- debug mode
+  - いつAPIを実行してるか、確認のため
 
-- TimeZone 対応
+- filter的な物はどうか？ (ENMLtoHTML filter とか)
+  - simple text filter
+  - html filter
 
 - Bulk update or API queue
   - Async API (Event machine?)

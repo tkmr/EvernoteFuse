@@ -52,7 +52,6 @@ module EvernoteFS
     end
 
     def to_s; read; end
-
     def read
       unless cached?
         content = callback.act_read

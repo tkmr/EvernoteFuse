@@ -24,8 +24,16 @@ module EvernoteFS
     def initialize(notebook)
       super(self)
       @book = notebook
-      @book.find_notes.each do |note|
-        self.write_to(note.title, Note.new(note))
+      load_notes
+    end
+
+    def load_notes(offset = 0)
+      res = @book.find_notes_with_option(offset)
+      res[:notes].each_with_index do |note, idx|
+        format = "%0#{res[:total_notes].to_s.length}d"
+        id = sprintf(format, (res[:total_notes] - (offset + idx)))
+        note_fs = Note.new(note, id)
+        self.write_to(note_fs.file_name, note_fs)
       end
     end
 
@@ -39,8 +47,9 @@ module EvernoteFS
     include CachedFile::CallbackBase
     attr_accessor :note
 
-    def initialize(my_note)
+    def initialize(my_note, id = nil)
       @note = my_note
+      @id   = id
       super(@note.to_uniq_key('note_content'), self)
     end
 
@@ -59,6 +68,10 @@ module EvernoteFS
     def updated_at
       REvernote::Logger.info ['EvernoteFS::Note#updated_at', @note.updated_at]
       @note.updated_at
+    end
+
+    def file_name
+      @id ? "#{@id}_#{@note.title}" : @note.title
     end
   end
 end

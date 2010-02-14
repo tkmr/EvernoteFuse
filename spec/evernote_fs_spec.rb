@@ -21,7 +21,7 @@ class EverMock
     end
 
     def findNotes(t, f, o, m)
-      {:notes => @notes.values}.stubnize!
+      {:notes => @notes.values, :totalNotes => 230}.stubnize!
     end
 
     def getNoteContent(t, guid)
@@ -106,7 +106,7 @@ describe EvernoteFS do
 
       describe :contents do
         it 'has some notes' do
-          @notebook.contents("").sort.should == @evernote.default_notebook.find_notes.map{|n| n.title }.sort
+          @notebook.contents("").sort.should == @notebook.files.values.map{|f| f.file_name }.sort
         end
       end
 
@@ -140,7 +140,7 @@ describe EvernoteFS do
         end
       end
 
-      # Note --------------------------
+      # Note -------------------------
       describe E::Note do
         before :each do
           @note = @notebook.files[@notebook.files.keys.last]
@@ -156,10 +156,10 @@ describe EvernoteFS do
 
         describe :write  do
           it 'should update a Note\'s content' do
-            @notebook.read_file(@note.note.title).should == @note.to_s
+            @notebook.read_file(@note.file_name).should == @note.to_s
             new_content = REvernote::ENML.new('this is new content').to_s
-            @notebook.write_to(@note.note.title, new_content)
-            @notebook.read_file(@note.note.title).should == new_content
+            @notebook.write_to(@note.file_name, new_content)
+            @notebook.read_file(@note.file_name).should == new_content
           end
         end
 

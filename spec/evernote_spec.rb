@@ -10,7 +10,7 @@ describe REvernote do
     @core.default_notebook.class.should == REvernote::Notebook
   end
 
-  # notebook ---------------------------------------------------------------
+  # notebook --------------------------------------------------------------
   describe REvernote::Notebook do
     before :all do
       @notebook = @core.default_notebook
