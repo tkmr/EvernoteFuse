@@ -126,6 +126,27 @@ describe EvernoteFS do
           @notebook.write_to(title, note)
           @notebook.read_file(title).should == note.to_s
         end
+
+        it 'should not add a note when it it exist' do
+          t = 'this is my post from my editor!'
+          b = 'body body body'
+
+          @core.note_store.should_receive(:createNote).and_return do |token, n|
+            @core.note_store.gen_note(n.title, n.content)
+          end
+          @notebook.write_to(t, b)
+          note = @notebook.files[t]
+
+          @core.note_store.should_receive(:updateNote).with(anything, note.note)
+          @core.note_store.should_not_receive(:createNote)
+          @notebook.write_to(t, 'new body2')
+
+          @core.note_store.should_receive(:updateNote).with(anything, note.note)
+          @core.note_store.should_not_receive(:createNote)
+          @notebook.write_to(t, 'new body3')
+
+          @notebook.read_file(t).should == REvernote::ENML.new('new body3').to_s
+        end
       end
 
       describe :new_file do
