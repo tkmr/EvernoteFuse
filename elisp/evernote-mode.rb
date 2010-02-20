@@ -3,8 +3,6 @@ require 'nkf'
 require 'evernote.rb'
 require 'elapp_helper.rb'
 
-EVMODE_CONF = REvernote::DEV_CONF
-
 module Evermode
   module Mode
     class EvernoteMode < ElAppHelper::ModeBase

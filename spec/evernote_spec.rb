@@ -2,7 +2,7 @@ require File.join(File.dirname(__FILE__), '..', 'evernote.rb')
 
 describe REvernote do
   before :all do
-    @core = REvernote::init REvernote::DEV_CONF
+    @core = REvernote::init(REvernote::Conf.init.connection)
   end
 
   it 'is loaded' do

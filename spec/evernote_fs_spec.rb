@@ -88,7 +88,7 @@ describe EvernoteFS do
   # Root --------------------------
   describe E::Root do
     before :all do
-      @root = E::Root.new(REvernote::DEV_CONF)
+      @root = E::Root.new(REvernote::Conf.init.connection)
       @evernote = @root.core
       @new_note_title = 'this is a new title'
       @new_note_body  = 'this is a new body'

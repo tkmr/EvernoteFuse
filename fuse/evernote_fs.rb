@@ -79,9 +79,19 @@ end
 if __FILE__ == $0
   target_path = ARGV.shift
   raise 'Argument error! set a mount point' unless target_path
-  REvernote::Logger.init(REvernote::DEV_CONF.logger)
-  root = EvernoteFS::Root.new(REvernote::DEV_CONF)
+  conf = REvernote::Conf.init
+
+  # debugger
+  REvernote::Logger.init(conf.logger)
+
+  # mount
+  root = EvernoteFS::Root.new(conf.connection)
   FuseFS.set_root(root)
   FuseFS.mount_under(target_path)
+
+  # trap exit()
+  END {
+    system("umount #{target_path}")
+  }
   FuseFS.run
 end

@@ -1,8 +1,4 @@
-- titleが重なっているNoteの回避
-  - titleへidを付けたらどうだろ、sortもできる
-
 - read only mode
-
 - simple text mode (evernote_fs)
 
 - debug mode
