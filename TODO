@@ -1,11 +1,11 @@
-- Emacsで書き込むと二枚、三枚かきこまれる
-  - Updateの判断が上手くいってない
-
-- Cacheのexpire time を考える
-  - 若しくはupdated_atの洗い替え
+- updated_atの洗い替え
 
 - titleが重なっているNoteの回避
   - titleへidを付けたらどうだろ、sortもできる
+
+- read only mode
+
+- simple text mode (evernote_fs)
 
 - debug mode
   - いつAPIを実行してるか、確認のため
@@ -26,3 +26,7 @@
 - drag & drop はどんな動きなのか
 
 - DTD check
+
+- Emacsで書き込むと二枚、三枚かきこまれる
+  - Updateの判断が上手くいってない
+

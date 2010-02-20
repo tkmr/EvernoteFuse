@@ -31,9 +31,10 @@ module EvernoteFS
 
     TMP_DIR = Pathname.new '/tmp/cache'
     TMP_DIR.mkpath
-    attr_accessor :callback, :cache_file
+    attr_accessor :callback, :cache_file, :cache_limit_sec
 
     def initialize(uniq_name,  callback_obj = nil, content = nil)
+      @cache_limit_sec = nil
       @cache_file = TMP_DIR + (SHA1.hexdigest(uniq_name) + ".cache")
       @callback  = callback_obj || CallbackMock.new
       if content
@@ -44,7 +45,11 @@ module EvernoteFS
     def cached?
       cache_exist = @cache_file.exist? ? @cache_file.size > 0 : false
       modified    = @callback.updated_at
-      cache_exist && (modified.nil? || modified < @cache_file.mtime)
+      cache_exist && !expired? && (modified.nil? || modified < @cache_file.mtime)
+    end
+
+    def expired?
+      @cache_limit_sec && (@cache_file.mtime + @cache_limit_sec.to_i) <= Time.now
     end
 
     def size

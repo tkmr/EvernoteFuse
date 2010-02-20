@@ -5,6 +5,7 @@ E = EvernoteFS
 describe EvernoteFS do
   describe E::CachedFile do
     before :each do
+      @temp_dir = E::CachedDir.new
       @callback = E::CachedFile::CallbackMock.new
       @file = E::CachedFile.new('/mnt/test/vi/test.txt', @callback)
     end
@@ -85,6 +86,29 @@ describe EvernoteFS do
       it 'should update cache when cached time older than resource.updated time' do
         @callback.stub!(:updated_at).and_return(Time.now + 3600)
         @file.write_to_file 'this is content'
+        @file.cached?.should == false
+      end
+    end
+
+    # cache --------------------------------------------------------
+    describe 'cache_limit_sec' do
+      before :each do
+        @callback = E::CachedFile::CallbackMock.new
+        @file     = E::CachedFile.new(@temp_dir.new_uuid, @callback)
+        @file.write('hello hello hello')
+      end
+
+      it 'should disable the cache when it is 0' do
+        @file.cache_file.stub!(:mtime).and_return(Time.now - 3600)
+        @callback.stub!(:updated_at).and_return(Time.now - 7200)
+
+        @file.cache_limit_sec = nil
+        @file.cached?.should == true
+
+        @file.cache_limit_sec = 3601
+        @file.cached?.should == true
+
+        @file.cache_limit_sec = 3600
         @file.cached?.should == false
       end
     end
