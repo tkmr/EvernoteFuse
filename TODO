@@ -1,5 +1,3 @@
-- updated_atの洗い替え
-
 - titleが重なっているNoteの回避
   - titleへidを付けたらどうだろ、sortもできる
 

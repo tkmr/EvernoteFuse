@@ -90,7 +90,7 @@ describe EvernoteFS do
       end
     end
 
-    # cache --------------------------------------------------------
+    # misc --------------------------------------------------------
     describe 'cache_limit_sec' do
       before :each do
         @callback = E::CachedFile::CallbackMock.new
@@ -214,5 +214,39 @@ describe EvernoteFS do
         @dir.files['test.txt'].class == E::CachedFile
       end
     end
+
+    describe 'refresh_interval' do
+      before :each do
+        @dir.refresh_interval_sec = nil
+        @dir.next_refresh_time    = nil
+      end
+
+      it 'should set a time (Time.now + reflesh_interval) to next_reflesh_time when it was received :refresh' do
+        @dir.refresh_interval_sec = 100
+        @dir.check_refresh
+        @dir.next_refresh_time.should_between_at(Time.now + 100)
+
+        @dir.refresh_interval_sec = nil
+        @dir.check_refresh
+        @dir.next_refresh_time.should == nil
+      end
+
+      it 'should send :reflesh to callback when it was received :read_file and reflesh_time < Time.now' do
+        @dir.refresh_interval_sec = 3600
+        @dir.next_refresh_time    = Time.now - 10
+        @dir.callback.should_receive(:refresh).and_return(true)
+
+        @dir.read_file(@file_name)
+        @dir.next_refresh_time.should_between_at(Time.now + 3600)
+      end
+    end
+
+  end
+end
+
+class Time
+  def should_between_at(time)
+    self.should < (time + 3)
+    self.should > (time - 3)
   end
 end

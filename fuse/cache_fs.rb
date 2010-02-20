@@ -88,16 +88,19 @@ module EvernoteFS
       def new_file(file_name, content); nil; end
       def new_dir(dir_name); nil; end
       def delete_dir(dir_name); nil; end
+      def refresh; nil; end
     end
 
     class CallbackMock
       include CallbackBase
     end
 
-    attr_accessor :subdirs, :files
+    attr_accessor :subdirs, :files, :refresh_interval_sec, :next_refresh_time, :callback
     def initialize(callback_obj = nil)
       super()
       @callback = callback_obj || CallbackMock.new
+      @refresh_interval_sec = nil
+      @next_refresh_time    = nil
     end
 
     def size(path)
@@ -162,10 +165,27 @@ module EvernoteFS
       super
     end
 
+    def split_path(*arg)
+      check_refresh
+      super
+    end
+
+    def check_refresh
+      if @refresh_interval_sec
+        if @next_refresh_time.nil? || (@next_refresh_time < Time.now)
+          @next_refresh_time = Time.now + @refresh_interval_sec
+          @callback.refresh
+        end
+      else
+        @next_refresh_time = nil
+      end
+    end
+
     def new_uuid
       UUIDTools::UUID.random_create.to_s
     end
 
+    # class method
     def self.new_uuid
       instance.new_uuid
     end
