@@ -1,3 +1,19 @@
+- Read only modeが Read onlyすぎる。。。（Load_notes はOKとする)
+
+- Updateする場合、Titleが 2_#{title} となっているので、修正
+
+- Html mode で複数Elementを対応 (body)
+
+- \nを<br/>に変換する、逆も
+
+- write interval を作る
+  何があっても3分に1回しかAPIへ書き込まない、など
+
+- emacs対応 (emacs_mode)
+ - .*~ は無効
+ - #.*# も無効
+ - 新規作成で2個作成される
+
 - Bulk update or API queue
   - Async API (Event machine?)
   - 過剰なUpdateを防ぐ
@@ -9,4 +25,3 @@
 - umount 対策 SIGHUP
 - drag & drop はどんな動きか
 - DTD check
-

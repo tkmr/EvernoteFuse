@@ -180,7 +180,7 @@ if __FILE__ == $0
 
   # trap exit()
   END {
-    system("umount #{target_path}")
+    system("sudo umount #{target_path}")
   }
   FuseFS.run
 end
