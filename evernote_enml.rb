@@ -4,6 +4,21 @@ require 'enml_dtd.rb'
 module REvernote
   class ENMLConvertError < Exception; end
   class ENML
+    class << self
+      def enml_to_html(enml)
+        e = self.new(enml.to_s)
+        [HTML_HEAD, '<body>', e.content.children.to_s, '</body></html>'].join("\n")
+      end
+
+      def html_to_enml(html)
+        if m = html.match(/.*<body>(.*)<\/body>.*/m)
+          ENML.new(m[1]).to_s
+        else
+          html
+        end
+      end
+    end
+
     def initialize(body)
       @checked_myxml = false
       @xml = REXML::Document.new BASEXML
@@ -36,6 +51,10 @@ module REvernote
         REvernote::Logger.info ['Evernote::ENML#initialize was called', body]
         raise ENMLConvertError.new
       end
+    end
+
+    def content
+      @xml.root
     end
 
     def xml
@@ -101,4 +120,12 @@ module REvernote
       end
     end
   end
+
+  HTML_HEAD = <<EOT
+<!DOCTYPE html>
+<html lang="ja" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta charset="UTF-8" />
+</head>
+EOT
 end

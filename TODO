@@ -1,7 +1,3 @@
-- read only mode
-
-- simple text mode (evernote_fs)
-
 - filter的な物はどうか？ (ENMLtoHTML filter とか)
   - simple text filter
   - html filter
@@ -12,6 +8,8 @@
 
 - CachedDir も contents はキャッシュするべき
   (marshal する？)
+
+- 不完全なHTML対応
 
 - umount 対策 SIGHUP
 

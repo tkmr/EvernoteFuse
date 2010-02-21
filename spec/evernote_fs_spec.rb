@@ -249,5 +249,35 @@ describe EvernoteFS do
         end
       end
     end
+
+    # special note -------------------------
+    describe EvernoteFS::ActsAsHtmlableNote do
+      before :each do
+        @title = 'html test note'
+        @body  = '<b>this is body</b>'
+        @html_notebook.write_to(@title, @body)
+      end
+
+      it 'should return a note.content as HTML which is converted from ENML' do
+        html = @html_notebook.read_file(@title)
+        html.gsub(/\n/, '').should =~ Regexp.new(".*<html.*<body>#{@body}</body></html>")
+      end
+
+      it 'should set a HTML to note.content as ENML' do
+        html = @html_notebook.read_file(@title)
+        new_body = 'hu hu hu hu hu....'
+        @html_notebook.write_to(@title, html.gsub(@body, new_body))
+
+        html2 = @html_notebook.read_file(@title)
+        html2.gsub(/\n/, '').should =~ Regexp.new(".*<html.*<body><div>#{new_body}</div></body></html>")
+
+        file = @html_notebook.files[@title]
+        file.note.content.gsub(/\n/, '').should =~ Regexp.new("<?xml.*<en-note>.*#{new_body}.*</en-note>")
+      end
+    end
+
+    describe EvernoteFS::ActsAsTextableNote do
+
+    end
   end
 end
