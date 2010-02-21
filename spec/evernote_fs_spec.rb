@@ -277,7 +277,28 @@ describe EvernoteFS do
     end
 
     describe EvernoteFS::ActsAsTextableNote do
+      before :each do
+        @title = 'text test note'
+        @body  = 'this is body'
+        @text_notebook.write_to(@title, @body)
+      end
 
+      it 'should return a note.content as text which is converted from ENML' do
+        text = @text_notebook.read_file(@title)
+        text.should == @body
+      end
+
+      it 'should set a text to note.content as ENML' do
+        text = @text_notebook.read_file(@title)
+        new_body = 'hu hu hu hu hu....'
+        @text_notebook.write_to(@title, new_body)
+
+        text2 = @text_notebook.read_file(@title)
+        text2.gsub(/\n/, '').should == new_body
+
+        file = @text_notebook.files[@title]
+        file.note.content.gsub(/\n/, '').should =~ Regexp.new("<?xml.*<en-note><div>#{new_body}</div></en-note>")
+      end
     end
   end
 end

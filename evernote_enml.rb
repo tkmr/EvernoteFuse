@@ -5,6 +5,7 @@ module REvernote
   class ENMLConvertError < Exception; end
   class ENML
     class << self
+      # html <- -> enml
       def enml_to_html(enml)
         e = self.new(enml.to_s)
         [HTML_HEAD, '<body>', e.content.children.to_s, '</body></html>'].join("\n")
@@ -16,6 +17,16 @@ module REvernote
         else
           html
         end
+      end
+
+      # text <- -> enml
+      def enml_to_text(enml)
+        e = self.new(enml.to_s)
+        e.content.children.first.children.to_s
+      end
+
+      def text_to_enml(text)
+        ENML.new(text.to_s)
       end
     end
 

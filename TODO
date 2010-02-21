@@ -1,6 +1,5 @@
 - filter的な物はどうか？ (ENMLtoHTML filter とか)
   - simple text filter
-  - html filter
 
 - Bulk update or API queue
   - Async API (Event machine?)
