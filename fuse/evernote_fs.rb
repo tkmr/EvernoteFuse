@@ -4,6 +4,34 @@ require File.join(File.dirname(__FILE__), 'cache_fs.rb')
 require File.join(File.dirname(__FILE__), '..', 'evernote.rb')
 
 module EvernoteFS
+  class Conf < REvernote::Conf
+    CONF_NAME = 'evernote_conf.yaml'
+
+    class << self
+      def init(yaml_file = CONF_NAME)
+        conf = super(yaml_file)
+        REvernote::Logger.init(conf.logger)
+        conf
+      end
+
+      def notebook(notebook_name)
+        unless @notebooks_conf_cache && @notebooks_conf_cache[notebook_name]
+          @notebooks_conf_cache ||= {}
+          @notebooks_conf_cache[notebook_name] ||= main_conf.notebooks[:default].merge(main_conf.notebooks[notebook_name] || {})
+        end
+        @notebooks_conf_cache[notebook_name]
+      end
+
+      def connection
+        main_conf.connection
+      end
+
+      def main_conf
+        @main_conf ||= init()
+      end
+    end
+  end
+
   class Root < CachedDir
     include CachedDir::CallbackBase
     attr_accessor :core
@@ -14,6 +42,11 @@ module EvernoteFS
       @core.notebooks.each do |nb|
         self.mkdir(nb.name, Notebook.new(nb))
       end
+    end
+
+    def mount(target_path)
+      FuseFS.set_root(self)
+      FuseFS.mount_under(target_path)
     end
   end
 
@@ -32,22 +65,31 @@ module EvernoteFS
       res[:notes].each_with_index do |note, idx|
         format = "%0#{res[:total_notes].to_s.length}d"
         id = sprintf(format, (res[:total_notes] - (offset + idx)))
-        note_fs = Note.new(note, id)
+        note_fs = Note.new(note, id, self)
         self.write_to(note_fs.file_name, note_fs)
       end
     end
 
     def new_file(name, content = nil)
       content ||= ""
-      Note.new(@book.create_note(:title => name, :content => content))
+      Note.new(@book.create_note(:title => name, :content => content), nil, self)
+    end
+
+    def refresh_interval_sec
+      conf['refresh_interval_sec']
+    end
+
+    def conf
+      EvernoteFS::Conf.notebook(@book.name)
     end
   end
 
   class Note < CachedFile
     include CachedFile::CallbackBase
-    attr_accessor :note
+    attr_accessor :note, :notebook
 
-    def initialize(my_note, id = nil)
+    def initialize(my_note, id = nil, notebook = nil)
+      @notebook = notebook
       @note = my_note
       @id   = id
       super(@note.to_uniq_key('note_content'), self)
@@ -73,21 +115,24 @@ module EvernoteFS
     def file_name
       @id ? "#{@id}_#{@note.title}" : @note.title
     end
+
+    def note_mode
+      @notebook.conf['note_mode']
+    end
+
+    def cache_limit_sec
+      @notebook.conf['cache_limit_sec']
+    end
   end
 end
 
 if __FILE__ == $0
   target_path = ARGV.shift
   raise 'Argument error! set a mount point' unless target_path
-  conf = REvernote::Conf.init
-
-  # debugger
-  REvernote::Logger.init(conf.logger)
 
   # mount
-  root = EvernoteFS::Root.new(conf.connection)
-  FuseFS.set_root(root)
-  FuseFS.mount_under(target_path)
+  root = EvernoteFS::Root.new(EvernoteFS::Conf.connection)
+  root.mount(target_path)
 
   # trap exit()
   END {

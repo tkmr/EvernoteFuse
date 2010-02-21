@@ -1,0 +1,23 @@
+---
+:notebooks:
+  :default:
+    cache_limit_sec: 3600
+    refresh_interval_sec: 3600
+  ro_notebook:
+    note_mode: readonly
+  html_notebook:
+    note_mode: html
+  text_notebook:
+    note_mode: text
+
+:connection:
+  :consumerSecret: xxxxxxxx
+  :userStoreUrl: xxxxxxx
+  :noteStoreUrlBase: xxxxxxx
+  :username: xxxxxxxx
+  :password: xxxxxxxx
+  :consumerKey: xxxxxxxx
+
+:logger:
+  :level: 0
+  :path: /tmp/evernote_fuse.log

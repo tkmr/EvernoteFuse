@@ -7,19 +7,20 @@ require 'evernote_enml.rb'
 
 module REvernote
   class ArgumentInvalidException < Exception; end
-
   def self.init(conf)
     Core.new(conf)
   end
 
   class Conf
+    CONF_NAME = 'evernote_conf.yaml'
+
     @@configs = {}
     def initialize conf
       @conf = conf
       specialize(@conf)
     end
 
-    def self.init(yaml_file = 'evernote_conf.yaml')
+    def self.init(yaml_file = CONF_NAME)
       @@configs[yaml_file] ||= self.new(YAML.load_file(yaml_file))
     end
 

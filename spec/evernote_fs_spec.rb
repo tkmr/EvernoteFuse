@@ -54,7 +54,10 @@ class EverMock
     attr_accessor :note_store, :default_notebook, :notebooks, :auth_token
     def initialize
       @note_store       = NoteStore.new
-      @notebooks        = [gen_notebook('default-notebook')]
+      @notebooks        = [gen_notebook('default-notebook'),
+                           gen_notebook('ro_notebook'),
+                           gen_notebook('html_notebook'),
+                           gen_notebook('text_notebook')]
       @default_notebook = @notebooks.first
       @auth_token       = 'dkdkdkdkdkdkdkdkdkd'
     end
@@ -79,6 +82,8 @@ describe EvernoteFS do
     #mock
     @core = EverMock::Core.new
     REvernote.stub!(:init).and_return(@core)
+    FuseFS.stub!(:set_root).and_return(true)
+    FuseFS.stub!(:mount_under).and_return(true)
   end
 
   it 'is exist' do
@@ -86,24 +91,62 @@ describe EvernoteFS do
   end
 
   # Root --------------------------
-  describe E::Root do
+  describe EvernoteFS::Root do
     before :all do
-      @root = E::Root.new(REvernote::Conf.init.connection)
+      @root = E::Root.new(EvernoteFS::Conf.connection)
       @evernote = @root.core
       @new_note_title = 'this is a new title'
       @new_note_body  = 'this is a new body'
+      @notebook    = @root.subdirs[@evernote.default_notebook.name]
+
+      @ro_notebook   = @root.subdirs['ro_notebook']
+      @ro_note       = @ro_notebook.files.values.first
+
+      @html_notebook = @root.subdirs['html_notebook']
+      @html_note     = @html_notebook.files.values.first
+
+      @text_notebook = @root.subdirs['text_notebook']
+      @text_note     = @text_notebook.files.values.first
     end
 
     it 'has some notebook' do
       @root.contents("").sort.should == @evernote.notebooks.map{|n| n.name }.sort
     end
 
-    # Notebook -----------------------
-    describe E::Notebook do
-      before :each do
-        @notebook = @root.subdirs[@evernote.default_notebook.name]
+    # Conf --------------------------
+    describe EvernoteFS::Conf do
+      before :all do
+        @config_name = File.join(File.dirname(__FILE__), 'evernote_spec_conf.yaml')
+        @config_file  = YAML.load_file(@config_name)
+        @default_conf = @config_file[:notebooks][:default]
+        EvernoteFS::Conf.init(@config_name)
       end
 
+      it 'should return notebook config when called EvernoteFS::Conf#notebook' do
+        EvernoteFS::Conf.notebook('ro_notebook')['cache_limit_sec'].should == @default_conf['cache_limit_sec']
+        EvernoteFS::Conf.notebook('ro_notebook')['refresh_interval_sec'].should == @default_conf['refresh_interval_sec']
+        EvernoteFS::Conf.notebook('ro_notebook')['note_mode'].should == 'readonly'
+        EvernoteFS::Conf.notebook('html_notebook')['note_mode'].should == 'html'
+        EvernoteFS::Conf.notebook('text_notebook')['note_mode'].should == 'text'
+      end
+
+      it 'should pass configuration to EvernoteFS::Notebook' do
+        @notebook.refresh_interval_sec.should == @default_conf['refresh_interval_sec']
+      end
+
+      it 'should pass configuration to EvernoteFS::Note' do
+        note = @notebook.files.values.first
+        note.cache_limit_sec.should == @default_conf['cache_limit_sec']
+        note.note_mode.should == nil
+
+        @ro_note.note_mode.should   == 'readonly'
+        @html_note.note_mode.should == 'html'
+        @text_note.note_mode.should == 'text'
+      end
+    end
+
+    # Notebook -----------------------
+    describe EvernoteFS::Notebook do
       describe :contents do
         it 'has some notes' do
           @notebook.contents("").sort.should == @notebook.files.values.map{|f| f.file_name }.sort
@@ -162,7 +205,7 @@ describe EvernoteFS do
       end
 
       # Note -------------------------
-      describe E::Note do
+      describe EvernoteFS::Note do
         before :each do
           @note = @notebook.files[@notebook.files.keys.last]
           @note.read
