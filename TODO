@@ -1,21 +1,12 @@
-- filter的な物はどうか？ (ENMLtoHTML filter とか)
-  - simple text filter
-
 - Bulk update or API queue
   - Async API (Event machine?)
-  - 過剰なUpdateがEvernoteへいかないように
+  - 過剰なUpdateを防ぐ
 
 - CachedDir も contents はキャッシュするべき
-  (marshal する？)
+  - さらに marshal する？
 
 - 不完全なHTML対応
-
 - umount 対策 SIGHUP
-
-- drag & drop はどんな動きなのか
-
+- drag & drop はどんな動きか
 - DTD check
-
-- Emacsで書き込むと二枚、三枚かきこまれる
-  - Updateの判断が上手くいってない
 

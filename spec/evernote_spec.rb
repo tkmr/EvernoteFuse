@@ -34,11 +34,23 @@ describe REvernote do
     end
 
     describe :create_note do
+      before :all do
+        @other_notebook = @core.notebooks.select{|nb| nb.guid != @notebook.guid }.first
+      end
+
       it 'should add note to evernote' do
         note = REvernote::Note.build(@core, :title => @new_title, :content => @new_body)
         new_note = @notebook.create_note(note)
         got_note = @notebook.get_note(new_note.guid)
         new_note.guid.should == got_note.guid
+      end
+
+      it 'should add new note to valid notebook' do
+        @other_notebook.guid.should_not == @notebook.guid
+
+        note = REvernote::Note.build(@core, :title => @new_title, :content => @new_body)
+        new_note = @other_notebook.create_note(note)
+        new_note.notebookGuid.should == @other_notebook.guid
       end
     end
 

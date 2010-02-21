@@ -210,6 +210,11 @@ describe EvernoteFS do
           file.class.should == EvernoteFS::Note
           file.to_s.should == REvernote::ENML.new(b).to_s
         end
+
+        it 'should set valid notebookGuid' do
+          file = @text_notebook.write_to('test title', 'test body')
+          file.note.notebookGuid.should == @text_notebook.book.guid
+        end
       end
 
       describe 'read_only mode' do

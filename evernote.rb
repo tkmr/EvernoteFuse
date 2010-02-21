@@ -133,6 +133,8 @@ module REvernote
       else
         raise ArgumentInvalidException.new
       end
+
+      raw_note.notebookGuid = self.guid
       convert_and_push_note @core.note_store.createNote(@core.auth_token, raw_note)
     end
 
