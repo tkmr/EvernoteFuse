@@ -57,7 +57,21 @@ module EvernoteFS
     def initialize(notebook)
       super(self)
       @book = notebook
+      enable_special_mode
       load_notes
+    end
+
+    def enable_special_mode
+      if note_mode
+        case note_mode
+        when 'readonly'
+          ActsAsReadOnly.apply_to self
+        when 'html'
+          ActsAsHtmlableNote.apply_to self
+        when 'text'
+          ActsAsTextableNote.apply_to self
+        end
+      end
     end
 
     def load_notes(offset = 0)
@@ -77,6 +91,10 @@ module EvernoteFS
 
     def refresh_interval_sec
       conf['refresh_interval_sec']
+    end
+
+    def note_mode
+      conf['note_mode']
     end
 
     def conf
@@ -117,12 +135,21 @@ module EvernoteFS
     end
 
     def note_mode
-      @notebook.conf['note_mode']
+      @notebook.note_mode
     end
 
     def cache_limit_sec
       @notebook.conf['cache_limit_sec']
     end
+  end
+
+  module ActsAsHtmlableNote
+    extend ExtendModule
+  end
+
+  module ActsAsTextableNote
+    extend ExtendModule
+
   end
 end
 

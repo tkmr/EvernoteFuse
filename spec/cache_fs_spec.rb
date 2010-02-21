@@ -240,7 +240,53 @@ describe EvernoteFS do
         @dir.next_refresh_time.should_between_at(Time.now + 3600)
       end
     end
+  end
 
+  describe EvernoteFS::ActsAsReadOnly do
+    before :each do
+      @dir = EvernoteFS::CachedDir.new
+      @dir.instance_eval {
+        class << self
+          include EvernoteFS::ActsAsReadOnly
+        end
+      }
+    end
+
+    it 'should be return false when called :can_rmdir?' do
+      @dir.can_rmdir?.should == false
+    end
+
+    it 'should be return false when called :can_mkdir?' do
+      @dir.can_mkdir?.should == false
+    end
+
+    it 'should be return false when called :can_delete?' do
+      @dir.can_delete?.should == false
+    end
+
+    it 'should be return false when called :can_write?' do
+      @dir.can_write?.should == false
+    end
+
+    it 'should be return false when called :rmdir' do
+      @dir.should_not_receive(:split_path)
+      @dir.rmdir('test').should == false
+    end
+
+    it 'should be return false when called :mkdir' do
+      @dir.should_not_receive(:split_path)
+      @dir.mkdir('test').should == false
+    end
+
+    it 'should be return false when called :delete' do
+      @dir.should_not_receive(:split_path)
+      @dir.delete('test').should == false
+    end
+
+    it 'should be return false when called :write_to' do
+      @dir.should_not_receive(:split_path)
+      @dir.write_to('test', 'b').should == false
+    end
   end
 end
 

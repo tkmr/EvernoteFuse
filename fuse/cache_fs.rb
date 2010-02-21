@@ -194,4 +194,32 @@ module EvernoteFS
       @@instance ||= self.new
     end
   end
+
+  # extend classes ------------
+  module ExtendModule
+    def apply_to(instance)
+      mod = self
+      target = get_meta_class(instance)
+      target.instance_eval { include mod }
+    end
+
+    def get_meta_class(obj)
+      class << obj
+        self
+      end
+    end
+  end
+
+  module ActsAsReadOnly
+    extend ExtendModule
+    def can_rmdir?(*arg); false; end
+    def can_mkdir?(*arg); false; end
+    def can_delete?(*arg); false; end
+    def can_write?(*arg); false; end
+
+    def rmdir(*arg); false; end
+    def mkdir(*arg); false; end
+    def delete(*arg); false; end
+    def write_to(*arg); false; end
+  end
 end

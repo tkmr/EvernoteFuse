@@ -141,16 +141,15 @@ describe EvernoteFS do
 
       it 'should pass configuration to EvernoteFS::Notebook' do
         @notebook.refresh_interval_sec.should == @default_conf['refresh_interval_sec']
+        @ro_notebook.note_mode.should   == 'readonly'
+        @html_notebook.note_mode.should == 'html'
+        @text_notebook.note_mode.should == 'text'
       end
 
       it 'should pass configuration to EvernoteFS::Note' do
         note = @notebook.files.values.first
         note.cache_limit_sec.should == @default_conf['cache_limit_sec']
         note.note_mode.should == nil
-
-        @ro_note.note_mode.should   == 'readonly'
-        @html_note.note_mode.should == 'html'
-        @text_note.note_mode.should == 'text'
       end
     end
 
@@ -210,6 +209,13 @@ describe EvernoteFS do
           file = @notebook.files[t]
           file.class.should == EvernoteFS::Note
           file.to_s.should == REvernote::ENML.new(b).to_s
+        end
+      end
+
+      describe 'read_only mode' do
+        it 'should include the EvernoteFS::ActsAsReadOnly module when note_mode is "readonly"' do
+          @ro_notebook.is_a?(EvernoteFS::ActsAsReadOnly).should == true
+          @ro_notebook.can_write?.should == false
         end
       end
 

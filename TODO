@@ -1,8 +1,6 @@
 - read only mode
-- simple text mode (evernote_fs)
 
-- debug mode
-  - いつAPIを実行してるか、確認のため
+- simple text mode (evernote_fs)
 
 - filter的な物はどうか？ (ENMLtoHTML filter とか)
   - simple text filter
