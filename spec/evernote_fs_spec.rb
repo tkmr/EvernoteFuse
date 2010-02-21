@@ -113,6 +113,15 @@ describe EvernoteFS do
       @root.contents("").sort.should == @evernote.notebooks.map{|n| n.name }.sort
     end
 
+    describe :mount do
+      it 'should call FuseFS.mount_under and set_root' do
+        test_path = '/tmp/everfs/test'
+        FuseFS.should_receive(:set_root).with(@root).and_return(true)
+        FuseFS.should_receive(:mount_under).with(test_path).and_return(true)
+        @root.mount(test_path)
+      end
+    end
+
     # Conf --------------------------
     describe EvernoteFS::Conf do
       before :all do
