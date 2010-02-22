@@ -1,5 +1,3 @@
-- Read only modeが Read onlyすぎる。。。（Load_notes はOKとする)
-
 - Updateする場合、Titleが 2_#{title} となっているので、修正
 
 - Html mode で複数Elementを対応 (body)

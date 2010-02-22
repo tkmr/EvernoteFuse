@@ -57,8 +57,8 @@ module EvernoteFS
     def initialize(notebook)
       super(self)
       @book = notebook
-      enable_special_mode
       load_notes
+      enable_special_mode
     end
 
     def enable_special_mode
