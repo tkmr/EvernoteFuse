@@ -56,7 +56,7 @@ module REvernote
     end
 
     def load_content
-      REvernote::Logger.info ['Note#load_content was called', self]
+      REvernote::Logger.info ["Note#load_content was called - #{@note.title} -  #{@note.guid}"]
       self.content = @core.note_store.getNoteContent(@core.auth_token, self.guid)
     end
 
@@ -70,7 +70,7 @@ module REvernote
     end
 
     def save
-      REvernote::Logger.info ['Note#save was called', self]
+      REvernote::Logger.info ["Note#save was called - #{@note.title} - #{@note.guid}"]
       @core.note_store.updateNote(@core.auth_token, @note)
     end
 
@@ -105,7 +105,7 @@ module REvernote
     end
 
     def find_notes_with_option(offset = 0, max = 100)
-      REvernote::Logger.info ['Notebook#find_notes was called', self]
+      REvernote::Logger.info ["Notebook#find_notes was called - #{@notebook.name} - #{@notebook.guid}"]
 
       filter = new_filter(:guid => self.guid, :asc => false)
       result = @core.note_store.findNotes(@core.auth_token, filter, offset, max)
@@ -116,12 +116,12 @@ module REvernote
     end
 
     def get_note(guid)
-      REvernote::Logger.info ['Notebook#get_note was called', self]
+      REvernote::Logger.info ["Notebook#get_note('#{guid}') was called - #{@notebook.name} - #{@notebook.guid}"]
       convert_and_push_note @core.note_store.getNote(@core.auth_token, guid, true, false, false, false)
     end
 
     def create_note(note_base)
-      REvernote::Logger.info ['Notebook#create_note was called', self]
+      REvernote::Logger.info ["Notebook#create_note was called - #{note_base}"]
 
       case note_base.class.name
       when "Hash"
@@ -170,7 +170,7 @@ module REvernote
     end
 
     def login(conf)
-      REvernote::Logger.info ['Core#login was called', self]
+      REvernote::Logger.info ['Core#login was called']
 
       userStore = Evernote::EDAM::UserStore::UserStore::Client.new(self.getProtocol(conf.userStoreUrl))
       unless userStore.checkVersion("Ruby EDAMTest", Evernote::EDAM::UserStore::EDAM_VERSION_MAJOR, Evernote::EDAM::UserStore::EDAM_VERSION_MINOR)
@@ -199,11 +199,11 @@ module REvernote
         msg = args.first
         if @logger
           if msg.class == Array
-            msg.each{|m|  @logger.send(name, m.inspect)  }
+            msg.each{|m|  @logger.send(name, "#{m.inspect} --- #{caller.first}")  }
           else
-            @logger.send(name, msg.inspect)
+            @logger.send(name, "#{msg.inspect} --- #{caller.first}")
           end
-          @logger.send(name, caller.inspect)
+          # logger.send(name, caller.inspect)
         end
       end
     end

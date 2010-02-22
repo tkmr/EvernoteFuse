@@ -1,7 +1,3 @@
-- Updateする場合、Titleが 2_#{title} となっているので、修正
-
-- Html mode で複数Elementを対応 (body)
-
 - \nを<br/>に変換する、逆も
 
 - write interval を作る
@@ -11,10 +7,16 @@
  - .*~ は無効
  - #.*# も無効
  - 新規作成で2個作成される
+ - titleが 13_12_title みたいになる
+ - 二重に保存される？ 新規 > 更新 > 更新 で3重に保存される？
 
 - Bulk update or API queue
+  - Write のIntervalを設定するとか？
+  - Sync方式？
   - Async API (Event machine?)
   - 過剰なUpdateを防ぐ
+
+- Html mode で複数Elementを対応 (body)
 
 - CachedDir も contents はキャッシュするべき
   - さらに marshal する？

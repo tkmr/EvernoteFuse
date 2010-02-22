@@ -245,6 +245,24 @@ describe EvernoteFS do
             @notebook.write_to(@note.file_name, new_content)
             @notebook.read_file(@note.file_name).should == new_content
           end
+
+          it 'should not modify a Note\'s title' do
+            title = 'this_is_title'
+            body  = 'this is body'
+            @notebook.write_to(title, body)
+
+            # reset
+            @notebook.files = {}
+            @notebook.load_notes
+
+            file = @notebook.files.values.select{|n| n.note.title == title}.first
+            @notebook.files[file.file_name].note.title.should == title
+            @notebook.write_to(file.file_name, 'update!!!!')
+
+            @notebook.files = {}
+            @notebook.load_notes
+            @notebook.files[file.file_name].note.title.should == title
+          end
         end
 
         describe :updated_at do

@@ -114,19 +114,17 @@ module EvernoteFS
     end
 
     def act_read
-      REvernote::Logger.info ['EvernoteFS::Note#read was called', self]
       @note.load_content
     end
 
     def act_write(body)
-      REvernote::Logger.info ['EvernoteFS::Note#write was called', self, body]
       @note.content = body
       @note.save
       @note.content
     end
 
     def updated_at
-      REvernote::Logger.info ['EvernoteFS::Note#updated_at', @note.updated_at]
+      REvernote::Logger.info ["EvernoteFS::Note#updated_at - #{@note.updated_at}"]
       @note.updated_at
     end
 
