@@ -1,5 +1,5 @@
 require 'rexml/document'
-require 'enml_dtd.rb'
+require File.join(File.dirname(__FILE__), 'enml_dtd.rb')
 
 module REvernote
   class ENMLConvertError < Exception; end

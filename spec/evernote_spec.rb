@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'evernote.rb')
+require File.join(File.dirname(__FILE__), '..', 'evernote', 'evernote.rb')
 
 describe REvernote do
   before :all do

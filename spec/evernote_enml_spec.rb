@@ -1,4 +1,4 @@
-require File.join(File.dirname(__FILE__), '..', 'evernote_enml.rb')
+require File.join(File.dirname(__FILE__), '..', 'evernote', 'evernote_enml.rb')
 
 describe REvernote::ENML do
   before :each do
